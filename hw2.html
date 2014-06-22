@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2014년 1학기 그래픽스 수업 HW2 - WooGenius</title>
+    <style>
+        html { overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<script src="lib/three.js"></script>
+<script>
+    var scene = new THREE.Scene();
+    var camera = new THREE.OrthographicCamera( window.innerWidth / - 2, window.innerWidth / 2, window.innerHeight / 2, window.innerHeight / - 2, -1000, 1000 );
+
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var particleCount = 1000,
+            particles = new THREE.Geometry(),
+            pMaterial = new THREE.ParticleBasicMaterial({
+                color: 0xFFFFFF,
+                size: 1
+            });
+
+    for (var p = 0; p < particleCount; p++) {
+        var pX = Math.cos(p/10)*p;
+        var pY = Math.sin(p/10)*p;
+        var pZ = p-500;
+        var particle = new THREE.Vertex(new THREE.Vector3(pX, pY, pZ));
+
+        particles.vertices.push(particle);
+    }
+
+    var particleSystem = new THREE.ParticleSystem(particles, pMaterial);
+
+    scene.add(particleSystem);
+
+    camera.position.z = 100;
+
+    renderer.render(scene, camera);
+
+    document.onkeydown = function(e) {
+        e = e || window.e;
+        switch (e.keyCode || e.which) {
+            case 37:    // left
+                particleSystem.rotateY(Math.PI/36);
+                renderer.render(scene, camera);
+                break;
+            case 39:    // right
+                particleSystem.rotateY(-Math.PI/36);
+                renderer.render(scene, camera);
+                break;
+            case 38:    // up
+                particleSystem.rotateX(-Math.PI/36);
+                renderer.render(scene, camera);
+                break;
+            case 40:    // down
+                particleSystem.rotateX(-Math.PI/36);
+                renderer.render(scene, camera);
+                break;
+        }
+    }
+
+</script>
+</body>
+</html>

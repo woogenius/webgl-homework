@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>2014년 1학기 그래픽스 수업 HW4 - WooGenius</title>
+    <style>
+        html { overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+    </style>
+</head>
+<body>
+<script src="lib/three.js"></script>
+<script>
+    var scene = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
+
+    var renderer = new THREE.WebGLRenderer();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document.body.appendChild(renderer.domElement);
+
+    var ambient = new THREE.AmbientLight(0xffffff);
+    scene.add(ambient);
+
+    var light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(5,5,3);
+    scene.add(light);
+
+    var sunSurface = new THREE.MeshPhongMaterial({
+        map: THREE.ImageUtils.loadTexture('img/sun_texture.png')});
+    var sunGeo = new THREE.SphereGeometry(1.5, 32, 32);
+    var sun = new THREE.Mesh(sunGeo, sunSurface);
+    scene.add(sun);
+
+    var earthSurface = new THREE.MeshPhongMaterial({
+        map: THREE.ImageUtils.loadTexture('img/earth_texture.jpg')});
+    var earthGeo = new THREE.SphereGeometry(0.5, 32, 32);
+    var earth = new THREE.Mesh(earthGeo, earthSurface);
+    earth.position.set(6, 0, 0);
+    scene.add(earth);
+
+    var moonSurface = new THREE.MeshPhongMaterial({
+        map: THREE.ImageUtils.loadTexture('img/moon_texture.jpg')});
+    var moonGeo = new THREE.SphereGeometry(0.2, 32, 32);
+    var moon = new THREE.Mesh(moonGeo, moonSurface);
+    moon.position.set(1, 1, 0);
+    scene.add(moon);
+
+    var clock = new THREE.Clock();
+
+    camera.position.z = 12;
+
+    function animate() {
+
+        requestAnimationFrame(animate);
+
+        var t = clock.getElapsedTime();
+        var e_angle = Math.PI * t * 0.2;
+        var m_angle = Math.PI * t * 1;
+
+        sun.rotateY(Math.PI/180);
+        moon.rotateY(Math.PI/180);
+        earth.rotateY(Math.PI/180);
+
+        earth.position.set(6* Math.cos(e_angle), 0, 6* Math.sin(e_angle));
+        moon.position.set(earth.position.x, earth.position.y + 1.5* Math.cos(m_angle), earth.position.z + 1.5* Math.sin(m_angle));
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+</script>
+</body>
+</html>

@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta content="text/html charset=UTF-8">
+    <title>2014년 1학기 그래픽스 수업 HW1 - WooGenius</title>
+    <style>
+        html { overflow: hidden; }
+        canvas { width: 100%; height: 100%; }
+    </style>
+</head>
+<body onload="initWebGL()">
+    <canvas id="hw1-canvas"></canvas>
+    <script id="shader-vs" type="x-shader/x-vertex">
+            attribute vec3 aVertexPosition;
+            attribute vec3 aVertexColor;
+
+            varying highp vec4 vColor;
+            void main(void) {
+                gl_Position = vec4(aVertexPosition, 1.0);
+                vColor = vec4(aVertexColor, 1.0);
+            }
+    </script>
+    <script id="shader-fs" type="x-shader/x-fragment">
+            varying highp vec4 vColor;
+            void main(void) {
+               gl_FragColor = vColor;
+            }
+    </script>
+    <script>
+        var gl = null,
+                canvas = null,
+                glProgram = null,
+                fragmentShader = null,
+                vertexShader = null;
+
+        var vertexPositionAttribute = null,
+                squaresVerticeBuffer = null,
+                smallSquaresVerticeBuffer = null,
+                vertexColorAttribute = null,
+                squaresBlueColorBuffer = null,
+                squaresRedColorBuffer = null;
+
+        var angle = 0.0;
+
+        function initWebGL()
+        {
+            canvas = document.getElementById("hw1-canvas");
+            try{
+                gl = canvas.getContext("webgl") || canvas.getContext("experimental-webgl");
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }catch(e){
+            }
+
+            if(gl)
+            {
+                initShaders();
+                setupBuffers();
+                (function animLoop(){
+                    setupWebGL();
+                    setupDynamicBuffers();
+                    drawScene();
+                    requestAnimationFrame(animLoop, canvas);
+                })();
+            }else{
+                alert(  "Error: Your browser does not appear to support WebGL.");
+            }
+        }
+
+        function setupWebGL()
+        {
+            //set the clear color to a shade of green
+            gl.clearColor(0.0, 0.0, 0.0, 1.0);
+            gl.clear(gl.COLOR_BUFFER_BIT);
+            gl.viewport(0, 0, canvas.width, canvas.height);
+        }
+
+        function initShaders()
+        {
+            //get shader source
+            var fs_source = document.getElementById('shader-fs').innerHTML,
+                    vs_source = document.getElementById('shader-vs').innerHTML;
+
+            //compile shaders
+            vertexShader = makeShader(vs_source, gl.VERTEX_SHADER);
+            fragmentShader = makeShader(fs_source, gl.FRAGMENT_SHADER);
+
+            //create program
+            glProgram = gl.createProgram();
+
+            //attach and link shaders to the program
+            gl.attachShader(glProgram, vertexShader);
+            gl.attachShader(glProgram, fragmentShader);
+            gl.linkProgram(glProgram);
+
+            if (!gl.getProgramParameter(glProgram, gl.LINK_STATUS)) {
+                alert("Unable to initialize the shader program.");
+            }
+
+            //use program
+            gl.useProgram(glProgram);
+        }
+
+        function makeShader(src, type)
+        {
+            //compile the vertex shader
+            var shader = gl.createShader(type);
+            gl.shaderSource(shader, src);
+            gl.compileShader(shader);
+
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+                alert("Error compiling shader: " + gl.getShaderInfoLog(shader));
+            }
+            return shader;
+        }
+
+        function setupBuffers()
+        {
+            var squareVerticeColors = [
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0,
+                1.0, 0.0, 0.0
+            ];
+
+            squaresRedColorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, squaresRedColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVerticeColors), gl.STATIC_DRAW);
+
+            squareVerticeColors = [
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0,
+                0.0, 0.0, 1.0
+            ];
+
+            squaresBlueColorBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, squaresBlueColorBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVerticeColors), gl.STATIC_DRAW);
+        }
+
+        function setupDynamicBuffers()
+        {
+            //limit translation amount to -0.5 to 0.5
+            var x_translation = Math.sin(angle)/2.0;
+
+            var squareVertices = [
+                0.5 + x_translation,  0.5 + x_translation,  0.0,
+                -0.5 + x_translation,  0.5 + x_translation,  0.0,
+                0.5 + x_translation, -0.5 + x_translation,  0.0,
+                -0.5 + x_translation, -0.5 + x_translation,  0.0
+            ];
+
+            squaresVerticeBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, squaresVerticeBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+
+            squareVertices = [
+                0.3 + x_translation,  0.3 + x_translation,  0.0,
+                -0.3 + x_translation,  0.3 + x_translation,  0.0,
+                0.3 + x_translation, -0.3 + x_translation,  0.0,
+                -0.3 + x_translation, -0.3 + x_translation,  0.0
+            ];
+
+            smallSquaresVerticeBuffer = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, smallSquaresVerticeBuffer);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(squareVertices), gl.STATIC_DRAW);
+
+            angle += 0.01;
+        }
+
+        function drawScene() {
+            vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(vertexPositionAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, squaresVerticeBuffer);
+            gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
+            gl.enableVertexAttribArray(vertexColorAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, squaresBlueColorBuffer);
+            gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+
+            vertexPositionAttribute = gl.getAttribLocation(glProgram, "aVertexPosition");
+            gl.enableVertexAttribArray(vertexPositionAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, smallSquaresVerticeBuffer);
+            gl.vertexAttribPointer(vertexPositionAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            vertexColorAttribute = gl.getAttribLocation(glProgram, "aVertexColor");
+            gl.enableVertexAttribArray(vertexColorAttribute);
+            gl.bindBuffer(gl.ARRAY_BUFFER, squaresRedColorBuffer);
+            gl.vertexAttribPointer(vertexColorAttribute, 3, gl.FLOAT, false, 0, 0);
+
+            gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+
+    </script>
+</body>
+</html>
