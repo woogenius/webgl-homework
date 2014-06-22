@@ -4,5 +4,9 @@
     "private": true,
     "scripts": {
         "start": "node app.js"
+    },
+    "dependencies": {
+        "connect": "3.4.4",
+        "serve-static": "*"
     }
 }
