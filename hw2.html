@@ -4,7 +4,7 @@
     <meta content="text/html charset=UTF-8">
     <title>2014년 1학기 그래픽스 수업 HW2 - WooGenius</title>
     <style>
-        html { overflow: hidden; }
+        html { overflow: hidden; background-color: black;}
         canvas { width: 100%; height: 100%; }
     </style>
 </head>
@@ -40,7 +40,20 @@
 
     camera.position.z = 100;
 
-    renderer.render(scene, camera);
+    // renderer.render(scene, camera);
+
+    function animate() {
+
+        requestAnimationFrame(animate);
+
+        // particleSystem.rotateZ(Math.PI/180);
+
+                renderer.render(scene, camera);
+    }
+
+    animate();
+
+
 
     document.onkeydown = function(e) {
         e = e || window.e;
